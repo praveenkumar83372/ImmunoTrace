@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - ImmunoTrace</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+<div class="app">
+    <div class="sidebar">
+        <div>
+            <div class="logo">ImmunoTrace</div>
+            <p onclick="location.href='profile.html'" style="cursor:pointer;">Profile</p>
+            <p class="active">Dashboard</p>
+            <p onclick="location.href='aboutus.html'" style="cursor:pointer;">About Us</p>
+        </div>
+        <div>
+            <div id="deviceStatus" class="status-box">● Checking...</div>
+            <button onclick="logout()" class="logout">Logout</button>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="topbar">
+            <h2 id="pageTitle">Welcome</h2>
+            <div class="top-right">
+                <div id="deviceStatusTop">● Checking...</div>
+                <button onclick="toggleTheme()" class="theme-toggle">🌙</button>
+                <button onclick="startScan()" class="btn btn-scan" id="scanBtn">Scan</button>
+                <button onclick="startSample()" class="btn btn-sample" id="sampleBtn">Sample</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="vitals">
+                <div class="card"><small>Heart Rate</small><b id="heart">0 BPM</b></div>
+                <div class="card"><small>SpO₂</small><b id="spo2">0%</b></div>
+                <div class="card"><small>Temperature</small><b id="temp">0°C</b></div>
+                <div class="card"><small>Status</small><b id="statusText">Idle</b></div>
+            </div>
+
+            <div class="grid">
+                <div class="left">
+                    <div class="card scroll">
+                        <h4>Vitamins & Minerals Analysis</h4>
+                        <div class="vit-grid">
+                            <div class="vit-card">Vitamin A<br><span id="vitA">-</span></div>
+                            <div class="vit-card">Vitamin B<br><span id="vitB">-</span></div>
+                            <div class="vit-card">Vitamin C<br><span id="vitC">-</span></div>
+                            <div class="vit-card">Vitamin D<br><span id="vitD">-</span></div>
+                            <div class="vit-card">Calcium<br><span id="calcium">-</span></div>
+                            <div class="vit-card">Zinc<br><span id="zinc">-</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right">
+                    <div class="card">
+                        <h4>Live Pulse</h4>
+                        <canvas id="graph" height="120" style="width:100%"></canvas>
+                    </div>
+                    <div class="card" id="healthInsights">
+                        <h4>AI Health Insights</h4>
+                        <p class="muted">Run a scan to view insights</p>
+                    </div>
+                    <div class="card">
+                        <h4>System Status</h4>
+                        <p id="systemText" class="muted">Waiting for scan...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ===============================
+   STORAGE & SESSION
+   =============================== */
+const getUsers = () => JSON.parse(localStorage.getItem("users")) || [];
+const saveUsers = (u) => localStorage.setItem("users", JSON.stringify(u));
+const getCurrentUser = () => JSON.parse(localStorage.getItem("currentUser"));
+const setCurrentUser = (u) => localStorage.setItem("currentUser", JSON.stringify(u));
+
+function logout() {
+    localStorage.removeItem("currentUser");
+    window.location.href = "login.html";
+}
+
+/* ===============================
+   THEME & DEVICE SYNC
+   =============================== */
+let deviceStatus = "offline";
+
+async function checkDevice() {
+    try {
+        let res = await fetch("http://127.0.0.1:5000/status");
+        let data = await res.json();
+        deviceStatus = data.status === "connected" ? "connected" : "simulation";
+    } catch { deviceStatus = "offline"; }
+    updateDeviceUI();
+}
+
+function updateDeviceUI() {
+    const main = document.getElementById("deviceStatus");
+    const top = document.getElementById("deviceStatusTop");
+    let text = "● Offline"; let color = "#ef4444";
+    if (deviceStatus === "connected") { text = "● Connected"; color = "#22c55e"; }
+    else if (deviceStatus === "simulation") { text = "● Simulation"; color = "#f59e0b"; }
+    if(main) { main.innerText = text; main.style.color = color; }
+    if(top) { top.innerText = text; top.style.color = color; }
+}
+
+function toggleTheme() {
+    const isDark = document.documentElement.classList.toggle("dark");
+    document.body.classList.toggle("dark");
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+}
+
+function applyStoredTheme() {
+    if (localStorage.getItem("theme") === "dark") {
+        document.documentElement.classList.add("dark");
+        document.body.classList.add("dark");
+    }
+}
+
+/* ===============================
+   SCAN ENGINE (25 SECONDS)
+   =============================== */
+let activeInterval;
+let graphData = [];
+let ctx;
+
+document.addEventListener("DOMContentLoaded", () => {
+    applyStoredTheme();
+    const canvas = document.getElementById("graph");
+    if (canvas) ctx = canvas.getContext("2d");
+    initHeader();
+    checkDevice();
+    setInterval(checkDevice, 5000);
+});
+
+function initHeader() {
+    let user = getCurrentUser();
+    if (user) document.getElementById("pageTitle").innerText = `Welcome back, ${user.name} 👋`;
+}
+
+function animateGraph(value) {
+    if (!ctx) return;
+    graphData.push(value);
+    if (graphData.length > 40) graphData.shift();
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.beginPath();
+    ctx.strokeStyle = "#6366f1";
+    ctx.lineWidth = 2;
+    graphData.forEach((v, i) => {
+        let x = i * (ctx.canvas.width / 40);
+        let y = ctx.canvas.height - (v - 50);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+}
+
+function startScan() {
+    if (deviceStatus !== "connected") return alert("⚠ USB Sensor not detected. Please plugin hardware.");
+    runHealthScan(false);
+}
+
+function startSample() { runHealthScan(true); }
+
+function runHealthScan(isSample) {
+    if (activeInterval) clearInterval(activeInterval);
+    let seconds = 0;
+    const statusText = document.getElementById("statusText");
+    const scanBtn = document.getElementById("scanBtn");
+    const sampleBtn = document.getElementById("sampleBtn");
+
+    statusText.innerText = isSample ? "Simulation Running..." : "Hardware Scanning...";
+    statusText.style.color = "orange";
+    scanBtn.disabled = true; sampleBtn.disabled = true;
+
+    activeInterval = setInterval(async () => {
+        let heart, spo2, temp;
+        let vitalsList = ["Normal", "Low", "Optimal", "Deficient"];
+        
+        if (isSample) {
+            heart = Math.floor(Math.random() * 20) + 72;
+            spo2 = Math.floor(Math.random() * 3) + 96;
+            temp = (36.4 + Math.random()).toFixed(1);
+            
+            update("vitA", vitalsList[Math.floor(Math.random()*vitalsList.length)]);
+            update("vitB", vitalsList[Math.floor(Math.random()*vitalsList.length)]);
+            update("vitC", "Optimal");
+            update("vitD", "Low");
+            update("calcium", "Normal");
+            update("zinc", "Optimal");
+        } else {
+            try {
+                let res = await fetch("http://127.0.0.1:5000/get_data");
+                let sensor = await res.json();
+                heart = sensor.heart; spo2 = sensor.spo2; temp = sensor.temp;
+                update("vitA", "Analyzing...");
+                update("vitB", "Analyzing...");
+            } catch { heart = 0; spo2 = 0; temp = 0; }
+        }
+
+        update("heart", heart + " BPM");
+        update("spo2", spo2 + "%");
+        update("temp", temp + "°C");
+        animateGraph(heart);
+
+        seconds++;
+        if (seconds >= 25) {
+            clearInterval(activeInterval);
+            statusText.innerText = "Completed";
+            statusText.style.color = "#22c55e";
+            scanBtn.disabled = false; sampleBtn.disabled = false;
+            
+            const finalVitamins = {
+                vitA: document.getElementById("vitA").innerText,
+                vitB: document.getElementById("vitB").innerText,
+                vitC: document.getElementById("vitC").innerText,
+                vitD: document.getElementById("vitD").innerText,
+                calcium: document.getElementById("calcium").innerText,
+                zinc: document.getElementById("zinc").innerText
+            };
+
+            saveReport({
+                date: isSample ? "Sample Demo" : new Date().toLocaleDateString('en-GB'),
+                heart, spo2, temp,
+                vitamins: finalVitamins,
+                type: isSample ? "Simulation" : "Hardware"
+            });
+            
+            alert("Scan Successful! Report saved to your history.");
+        }
+    }, 1000);
+}
+
+function saveReport(report) {
+    let users = getUsers();
+    let current = getCurrentUser();
+    if (!current) return;
+    let updatedUsers = users.map(u => {
+        if (u.email === current.email) {
+            if (!u.reports) u.reports = [];
+            u.reports.push(report);
+            current = u;
+            return u;
+        }
+        return u;
+    });
+    saveUsers(updatedUsers);
+    setCurrentUser(current);
+}
+
+function update(id, val) { 
+    let el = document.getElementById(id); 
+    if (el) el.innerText = val; 
+}
+
+/* ===============================
+   PROFESSIONAL MEDICAL PDF 🔥
+   =============================== */
+function downloadReport(index) {
+    let user = getCurrentUser();
+    let r = user.reports[index];
+    if (!r) return;
+
+    const { jsPDF } = window.jspdf;
+    let doc = new jsPDF();
+
+    // 1. Header Branding
+    doc.setFillColor(30, 27, 75); 
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(26); doc.setFont("helvetica", "bold");
+    doc.text("ImmunoTrace", 20, 22);
+    doc.setFontSize(10); doc.setFont("helvetica", "normal");
+    doc.text("AI-Powered Health Diagnostic Suite", 20, 31);
+    doc.text("Clinical Simulation Prototype", 145, 22);
+
+    // 2. Patient & Contact Info
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(11); doc.setFont("helvetica", "bold");
+    doc.text("PATIENT INFORMATION", 20, 55);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+    doc.text(`Full Name: ${user.name}`, 20, 65);
+    doc.text(`Email ID: ${user.email}`, 20, 72);
+    doc.text(`Age: ${user.age || "N/A"}`, 20, 79);
+    
+    doc.text(`Report Date: ${r.date}`, 130, 65);
+    doc.text(`Scan Type: ${r.type}`, 130, 72);
+    doc.text(`Report ID: IT-${Math.floor(100000 + Math.random() * 900000)}`, 130, 79);
+    doc.line(20, 85, 190, 85);
+
+    // 3. Vitals Analysis Table
+    doc.setFont("helvetica", "bold"); doc.text("VITAL SIGNS ANALYSIS", 20, 95);
+    doc.setFillColor(245, 245, 250); doc.rect(20, 100, 170, 8, 'F');
+    doc.setFontSize(9);
+    doc.text("Parameter", 25, 106); doc.text("Result", 90, 106); doc.text("Reference Status", 150, 106);
+
+    let rows = [
+        ["Heart Rate", `${r.heart} BPM`, r.heart > 100 || r.heart < 60 ? "Abnormal" : "Stable"],
+        ["Oxygen (SpO2)", `${r.spo2}%`, r.spo2 < 95 ? "Low" : "Optimal"],
+        ["Body Temp", `${r.temp}°C`, r.temp > 37.5 ? "Elevated" : "Normal"]
+    ];
+    rows.forEach((row, i) => {
+        let y = 115 + (i * 10);
+        doc.setFont("helvetica", "normal");
+        doc.text(row[0], 25, y); doc.text(row[1], 90, y);
+        doc.setFont("helvetica", "bold"); doc.text(row[2], 150, y);
+    });
+
+    // 4. Nutritional Markers Grid
+    if (r.vitamins) {
+        doc.setFontSize(11); doc.setFont("helvetica", "bold");
+        doc.text("NUTRITIONAL & MINERAL MARKERS", 20, 155);
+        let vList = [
+            ["Vitamin A", r.vitamins.vitA], ["Vitamin B", r.vitamins.vitB],
+            ["Vitamin C", r.vitamins.vitC], ["Vitamin D", r.vitamins.vitD],
+            ["Calcium", r.vitamins.calcium], ["Zinc", r.vitamins.zinc]
+        ];
+        vList.forEach((v, i) => {
+            let col = i % 2; let rowIdx = Math.floor(i / 2);
+            let x = 20 + (col * 85); let y = 165 + (rowIdx * 12);
+            doc.setFillColor(248, 248, 255); doc.roundedRect(x, y-5, 80, 10, 2, 2, 'F');
+            doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.text(`${v[0]}:`, x + 5, y + 2);
+            doc.setFont("helvetica", "normal"); doc.text(v[1], x + 40, y + 2);
+        });
+    }
+
+    // 5. Software Details & Support Footer
+    doc.setDrawColor(200, 200, 200); doc.line(20, 250, 190, 250);
+    doc.setFontSize(9); doc.setFont("helvetica", "bold");
+    doc.text("System & Support Information:", 20, 258);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+    doc.text("Software: ImmunoTrace Diagnostic Suite v2.0", 20, 264);
+    doc.text("Institution: Dr. MGR Educational and Research Institute", 20, 269);
+    
+    doc.setFont("helvetica", "bold"); doc.setTextColor(0, 0, 0); doc.text("Team 404 Support:", 130, 258);
+    doc.setFont("helvetica", "normal"); doc.text("Email: team404.mgr@gmail.com", 130, 264);
+    doc.text("Helpline: +91 98765 43210", 130, 269);
+
+    doc.setFontSize(7); doc.setTextColor(150, 150, 150);
+    doc.text("Disclaimer: Simulated report for monitoring only. Not a medical laboratory replacement.", 20, 280);
+
+    doc.save(`ImmunoTrace_Report_${user.name.replace(/\s+/g, '_')}.pdf`);
+}
+</script>
+</body>
+</html>

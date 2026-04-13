@@ -1,0 +1,340 @@
+/* ===============================
+GLOBAL RESET
+=============================== */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI', Arial, sans-serif;
+}
+
+body{
+    background:#eef2f7;
+    color:#111827;
+    transition: background 0.3s, color 0.3s; /* Smooth theme transition */
+}
+
+/* ===============================
+APP LAYOUT
+=============================== */
+.app{
+    display:flex;
+}
+
+/* ===============================
+SIDEBAR (Keeping your right-side preference)
+=============================== */
+.sidebar{
+    width:240px;
+    height:100vh;
+    background:#1e1b4b;
+    color:white;
+    position:fixed;
+    right:0; /* Keep on right as per your code */
+    top:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    padding:25px 20px;
+    z-index: 100;
+}
+
+.logo{
+    font-size:22px;
+    font-weight:700;
+    margin-bottom:30px;
+}
+
+.sidebar p{
+    margin:10px 0;
+    padding:10px;
+    border-radius:10px;
+    cursor:pointer;
+    transition: 0.2s;
+}
+
+.sidebar p:hover{
+    background:rgba(255,255,255,0.1);
+}
+
+.active{
+    background:rgba(255,255,255,0.2);
+    font-weight:600;
+}
+
+/* ===============================
+STATUS + LOGOUT
+=============================== */
+.status-box{
+    background:#0f172a;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:10px;
+    font-size: 14px;
+}
+
+.logout{
+    width:100%;
+    padding:12px;
+    background:#ef4444;
+    border:none;
+    border-radius:10px;
+    color:white;
+    cursor:pointer;
+}
+
+/* ===============================
+MAIN
+=============================== */
+.main{
+    margin-right:240px; /* Aligned with right-sidebar */
+    width:calc(100% - 240px);
+}
+
+/* ===============================
+HEADER (NO OVERLAP FIXED)
+=============================== */
+.topbar{
+    height:70px;
+    background:#3b2f7f;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 25px;
+    position:sticky;
+    top:0;
+    z-index:50;
+}
+
+/* RIGHT SIDE */
+.top-right{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+/* ===============================
+BUTTONS
+=============================== */
+button{
+    padding:8px 16px;
+    border:none;
+    border-radius:20px;
+    cursor:pointer;
+    font-weight: 500;
+}
+
+.btn-scan{
+    background:white;
+    color: #1e1b4b;
+}
+
+.btn-sample{
+    background:#22c55e;
+    color:white;
+}
+
+.theme-toggle{
+    background:black;
+    color:white;
+    padding:6px 10px;
+    border-radius:20px;
+}
+
+/* ===============================
+CONTENT
+=============================== */
+.content{
+    padding:25px;
+}
+
+/* ===============================
+CARDS
+=============================== */
+.card{
+    background:white;
+    padding:18px;
+    border-radius:14px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.06);
+    transition:0.2s;
+}
+
+.card:hover{
+    transform:translateY(-4px);
+}
+
+/* ===============================
+VITALS
+=============================== */
+.vitals{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-bottom:20px;
+}
+
+/* ===============================
+LAYOUT GRID
+=============================== */
+.grid{
+    display:flex;
+    gap:20px;
+}
+
+.left{
+    flex:2;
+}
+
+.right{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+/* ===============================
+VITAMINS GRID
+=============================== */
+.vit-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.vit-card{
+    background:white;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #d1d5db; /* Sharper border */
+}
+
+/* ===============================
+ABOUT PAGE
+=============================== */
+.section{
+    margin-bottom:40px;
+}
+
+.section h2{
+    margin-bottom:15px;
+}
+
+.step-grid, .feature-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:15px;
+}
+
+.step-card, .feature-card{
+    background:white;
+    padding:18px;
+    border-radius:12px;
+    text-align:center;
+    box-shadow:0 4px 10px rgba(0,0,0,0.05);
+}
+
+.step-card span{
+    display:block;
+    font-weight:bold;
+    margin-bottom:5px;
+    color:#6366f1;
+}
+
+/* ===============================
+FAQ
+=============================== */
+.faq{
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:10px;
+    cursor:pointer;
+}
+
+/* ===============================
+CONTACT
+=============================== */
+.contact{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.contact-form{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+}
+
+input, textarea{
+    width:100%;
+    padding:12px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    margin-bottom:10px;
+    outline: none;
+}
+
+/* ===============================
+DARK MODE SUPPORT 🔥
+=============================== */
+.dark body {
+    background: #0f172a;
+    color: #f8fafc;
+}
+
+.dark .card, .dark .vit-card, .dark .step-card, .dark .feature-card, .dark .faq, .dark .contact-form {
+    background: #1e293b;
+    color: #f8fafc;
+    border: 1px solid #334155;
+}
+
+.dark .muted {
+    color: #94a3b8;
+}
+
+.dark input, .dark textarea {
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: white;
+}
+
+/* ===============================
+RESPONSIVE
+=============================== */
+@media(max-width:900px){
+    .sidebar{
+        display:none;
+    }
+
+    .main{
+        margin-right:0; /* Clear margin when sidebar hidden */
+        width: 100%;
+    }
+
+    .vitals{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .grid{
+        flex-direction:column;
+    }
+
+    .contact{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:500px){
+    .vitals{
+        grid-template-columns:1fr;
+    }
+
+    .topbar{
+        flex-direction:column;
+        height:auto;
+        padding:15px;
+        gap:10px;
+    }
+}

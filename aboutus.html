@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>About - ImmunoTrace</title>
+
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+
+<div>
+<div class="logo">ImmunoTrace</div>
+
+<p onclick="location.href='profile.html'">Profile</p>
+<p onclick="location.href='index.html'">Dashboard</p>
+<p class="active">About Us</p>
+</div>
+
+<div>
+<div id="deviceStatus" class="status-box">● Checking...</div>
+<button onclick="logout()" class="logout">Logout</button>
+</div>
+
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- HEADER -->
+<div class="topbar">
+<h2 id="pageTitle"></h2>
+
+<div class="top-right">
+<div id="deviceStatusTop" class="status-text"></div>
+<button onclick="toggleTheme()" class="theme-toggle">🌙</button>
+</div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- ABOUT -->
+<div class="section fade-in">
+<h1>About ImmunoTrace</h1>
+<p class="muted">Smart AI-powered health monitoring</p>
+
+<p class="desc">
+ImmunoTrace is an advanced health monitoring system that uses light-based sensing
+and AI-driven analysis to estimate vital health indicators in real-time.
+</p>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section fade-in">
+<h2>How It Works</h2>
+
+<div class="step-grid">
+
+<div class="step-card"><span>01</span>Place Hand</div>
+<div class="step-card"><span>02</span>Scan</div>
+<div class="step-card"><span>03</span>Sensors</div>
+<div class="step-card"><span>04</span>Analyze</div>
+<div class="step-card"><span>05</span>Dashboard</div>
+
+</div>
+</div>
+
+<!-- FEATURES -->
+<div class="section fade-in">
+<h2>Core Features</h2>
+
+<div class="feature-grid">
+
+<div class="feature-card">Non-invasive</div>
+<div class="feature-card">Real-time</div>
+<div class="feature-card">AI Insights</div>
+<div class="feature-card">Personalized</div>
+<div class="feature-card">Web Dashboard</div>
+<div class="feature-card">~70% Accuracy</div>
+
+</div>
+</div>
+
+<!-- FAQ -->
+<div class="section fade-in">
+<h2>FAQ</h2>
+
+<div class="faq">
+<h4 onclick="toggleFAQ(this)">Is this a medical device?</h4>
+<p>This system provides estimations and is not a replacement for clinical diagnosis.</p>
+</div>
+
+<div class="faq">
+<h4 onclick="toggleFAQ(this)">Is it safe?</h4>
+<p>Yes, it uses safe optical sensing methods.</p>
+</div>
+
+</div>
+
+<!-- CONTACT -->
+<div class="section fade-in">
+<h2>Contact Us</h2>
+
+<div class="contact">
+
+<div>
+<p>Email: immunotrace.team@gmail.com</p>
+<p>Location: Chennai, India</p>
+</div>
+
+<div class="contact-form">
+<input placeholder="Your Name">
+<input placeholder="Your Email">
+<textarea placeholder="Your Message"></textarea>
+<button>Send Message</button>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+
+/* ===============================
+COMMON HEADER
+=============================== */
+function initHeader(){
+let user = JSON.parse(localStorage.getItem("currentUser"));
+let name = user?.name || "User";
+
+document.getElementById("pageTitle").innerText =
+"Welcome back, " + name + " 👋";
+}
+
+/* ===============================
+DEVICE STATUS
+=============================== */
+function syncDevice(){
+let main = document.getElementById("deviceStatus");
+let top = document.getElementById("deviceStatusTop");
+
+if(main && top){
+top.innerText = main.innerText;
+
+if(main.innerText.includes("Connected")){
+top.style.color = "lightgreen";
+}else{
+top.style.color = "#f87171";
+}
+}
+}
+setInterval(syncDevice,1000);
+
+/* ===============================
+FAQ
+=============================== */
+function toggleFAQ(el){
+let p = el.nextElementSibling;
+p.style.display = p.style.display === "block" ? "none" : "block";
+}
+
+/* ===============================
+THEME
+=============================== */
+function toggleTheme(){
+document.body.classList.toggle("dark");
+
+let mode = document.body.classList.contains("dark") ? "dark" : "light";
+localStorage.setItem("theme", mode);
+}
+
+(function(){
+let theme = localStorage.getItem("theme");
+if(theme === "dark"){
+document.body.classList.add("dark");
+}
+})();
+
+/* INIT */
+initHeader();
+
+</script>
+
+</body>
+</html>

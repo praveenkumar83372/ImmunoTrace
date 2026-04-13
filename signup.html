@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Signup - ImmunoTrace</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+    <style>
+        .auth-container{ display:flex; height:100vh; }
+        .auth-left{ width:50%; background: #1e1b4b; } /* Fallback color */
+        .auth-left img{ width:100%; height:100%; object-fit:cover; }
+        .auth-right{ width:50%; display:flex; justify-content:center; align-items:center; background:#f5f5f5; }
+        .auth-box{ width:360px; background:white; padding:30px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.08); }
+        .brand{ font-size:22px; font-weight:700; color:#3b2f7f; margin-bottom:10px; }
+        .input-group{ margin-bottom:15px; }
+        .input-group label{ font-size:14px; font-weight: 600; }
+        .input-group input{ width:100%; padding:12px; margin-top:6px; border-radius:8px; border:1px solid #ccc; }
+        .auth-btn{ width:100%; padding:12px; background:#1e1b4b; color:white; border:none; border-radius:8px; cursor:pointer; font-size:16px; }
+        .auth-footer{ text-align:center; margin-top:15px; font-size:13px; }
+        /* Dark Mode support for Auth */
+        .dark .auth-right { background: #0f172a; }
+        .dark .auth-box { background: #1e293b; color: white; }
+        .dark .auth-box p { color: #94a3b8; }
+        .dark input { background: #0f172a; border: 1px solid #334155; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    <div class="auth-left"><img src="image2.png" alt="Health Monitoring"></div>
+    <div class="auth-right">
+        <div class="auth-box">
+            <div class="brand">ImmunoTrace</div>
+            <h2>Create an Account</h2>
+            <p>Start your health journey with us</p>
+
+            <div class="input-group">
+                <label>Full Name</label>
+                <input id="name" type="text" placeholder="John Doe">
+            </div>
+            <div class="input-group">
+                <label>Age</label>
+                <input id="age" type="number" placeholder="21">
+            </div>
+            <div class="input-group">
+                <label>Email</label>
+                <input id="email" type="email" placeholder="you@email.com">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input id="password" type="password" placeholder="********">
+            </div>
+
+            <button onclick="handleSignup()" class="auth-btn">Create Account</button>
+            <div class="auth-footer">
+                Already have an account? <a href="login.html"><b>Sign-in</b></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function handleSignup(){
+        let name = document.getElementById("name").value.trim();
+        let age = document.getElementById("age").value.trim();
+        let email = document.getElementById("email").value.trim();
+        let password = document.getElementById("password").value.trim();
+
+        if(!name || !age || !email || !password){
+            alert("Please fill all fields");
+            return;
+        }
+
+        // Call the global function in script.js
+        if(typeof signup === "function") {
+            signup(name, age, email, password);
+        } else {
+            alert("Error: script.js not loaded properly.");
+        }
+    }
+
+    // Auto-login on Enter key
+    document.addEventListener("keypress", (e) => { if(e.key === "Enter") handleSignup(); });
+    
+    // Maintain theme
+    window.onload = () => { if(typeof initTheme === "function") initTheme(); };
+</script>
+</body>
+</html>
