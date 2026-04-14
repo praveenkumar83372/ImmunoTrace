@@ -213,7 +213,7 @@ function runHealthScan(isSample) {
         animateGraph(heart);
 
         seconds++;
-        if (seconds >= 25) {
+        if (seconds >= 60) {
             clearInterval(activeInterval);
             statusText.innerText = "Completed";
             statusText.style.color = "#22c55e";

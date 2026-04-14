@@ -121,7 +121,7 @@ async function runScan(isSample) {
         animateGraph(finalData.heart);
 
         seconds++;
-        if (seconds >= 25) { 
+        if (seconds >= 60) { 
             clearInterval(scanInterval);
             finishScan(finalData, vitData, isSample);
         }
